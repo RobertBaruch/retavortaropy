@@ -2,8 +2,10 @@
 
 # pylint: disable=c-extension-no-member
 
+from dataclasses import asdict
 from importlib.resources import files
 import inspect
+import json
 from typing import cast, Any
 from xml.sax.handler import ContentHandler
 from xml.sax.xmlreader import AttributesNSImpl
@@ -38,8 +40,8 @@ class DTDResolver(etree.Resolver):
 class RevoContentHandler(ContentHandler):
     """Builds the tree."""
 
-    root: Any
-    stack: list[Any]
+    root: vortaro.Element
+    stack: list[vortaro.Element]
 
     def __init__(self):
         super().__init__()
@@ -96,7 +98,7 @@ class RevoContentHandler(ContentHandler):
             return
 
 
-def main():
+def main() -> None:
     """Main function."""
     parser = etree.XMLParser(load_dtd=True, resolve_entities=True)
     parser.resolvers.add(DTDResolver())
@@ -106,7 +108,13 @@ def main():
     saxify(tree, handler)
     # root = tree.getroot()
     # print(etree.tostring(root, pretty_print=True, encoding="unicode"))
-    print(handler.root)
+
+    root = handler.root
+    print(root)
+    root_dict = asdict(root)
+    root_json = json.dumps(root_dict, ensure_ascii=False, indent=2)
+    print(root_json)
+
 
 
 if __name__ == "__main__":
