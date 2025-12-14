@@ -1,0 +1,25 @@
+[project]
+name = "retavortaropy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Robert Baruch", email = "robert.c.baruch@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "lxml>=6.0.2",
+]
+
+[project.scripts]
+retavortaropy = "retavortaropy:main"
+
+[build-system]
+requires = ["uv_build>=0.8.22,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"retavortaropy" = ["dtd/*.dtd"]
