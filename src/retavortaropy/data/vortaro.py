@@ -3,17 +3,25 @@
 from __future__ import annotations  # For forward references
 
 import dataclasses
+from typing import TypeVar
+
+@dataclasses.dataclass
+class Element:
+    """Any element."""
+
+
+T = TypeVar("T", bound=Element)
 
 
 @dataclasses.dataclass
-class TextOnlyElement:
+class TextOnlyElement(Element):
     """An element that contains only text."""
 
     text: str = ""
 
 
 @dataclasses.dataclass
-class HasContent[T]:
+class HasContent[T](Element):
     """An element that contains an ordered list of elements."""
 
     content: list[T] = dataclasses.field(default_factory=list[T])
@@ -29,7 +37,7 @@ class HasTextInContent[T](HasContent[str | T]):
 
 
 @dataclasses.dataclass
-class HasKap:
+class HasKap(Element):
     """An element that has a kap (rootword) element."""
 
     kap: Kap | None = None
@@ -51,7 +59,9 @@ type TekstStiloj = "Tld | SncRef | Klr | Em | Ts | Sup | Sub | Ctl | Mis | Frm |
 # <!-- priskribaj elementoj -->
 # <!ENTITY % priskribaj-elementoj
 #   "fnt|gra|uzo|dif|ekz|rim|ref|refgrp|trd|trdgrp|bld|adm|url|mlg|lstref|tezrad">
-type PriskribajElementoj = "Fnt | Gra | Uzo | Dif | Ekz | Rim | Ref | RefGrp | Trd | TrdGrp | Bld | Adm | Url | Mlg | LstRef | TezRad"
+type PriskribajElementoj = (
+    "Fnt | Gra | Uzo | Dif | Ekz | Rim | Ref | RefGrp | Trd | TrdGrp | Bld | Adm | Url | Mlg | LstRef | TezRad"
+)
 
 
 # <!-- [rad] Radiko de kapvorto. Ĝi estas bezonata por anstaŭigo
@@ -138,7 +148,7 @@ class Fnt(HasTextInContent[Bib | Aut | Vrk | Lok | Url]):
 #             var CDATA #IMPLIED
 # >
 @dataclasses.dataclass
-class Tld:
+class Tld(Element):
     """The "tilde" replacement for a root."""
 
     lit: str = ""
@@ -153,7 +163,7 @@ class Tld:
 #         fak CDATA #IMPLIED
 # >
 @dataclasses.dataclass
-class TezRad:
+class TezRad(Element):
     """A thesaurus root."""
 
     fak: str = ""
@@ -169,7 +179,7 @@ class TezRad:
 #        ref CDATA #IMPLIED
 # >
 @dataclasses.dataclass
-class SncRef:
+class SncRef(Element):
     """Reference to another sense of a word."""
 
     ref: str = ""
@@ -713,6 +723,110 @@ class Art(HasKap, HasContent[SubArt | Drv | Snc | PriskribajElementoj]):
 class Vortaro(HasContent[Art]):
     """Dictionary entry."""
 
+
+def element_for(qname: str) -> Element:
+    """Returns an empty element for the given qname."""
+    match qname:
+        case "adm":
+            return Adm()
+        case "art":
+            return Art()
+        case "aut":
+            return Aut()
+        case "baz":
+            return Baz()
+        case "bib":
+            return Bib()
+        case "bld":
+            return Bld()
+        case "ctl":
+            return Ctl()
+        case "dif":
+            return Dif()
+        case "drv":
+            return Drv()
+        case "ekz":
+            return Ekz()
+        case "em":
+            return Em()
+        case "esc":
+            return Esc()
+        case "fnt":
+            return Fnt()
+        case "frm":
+            return Frm()
+        case "g":
+            return G()
+        case "gra":
+            return Gra()
+        case "ind":
+            return Ind()
+        case "k":
+            return K()
+        case "kap":
+            return Kap()
+        case "ke":
+            return Ke()
+        case "klr":
+            return Klr()
+        case "lok":
+            return Lok()
+        case "lstref":
+            return LstRef()
+        case "mis":
+            return Mis()
+        case "mlg":
+            return Mlg()
+        case "mrk":
+            return Mrk()
+        case "nac":
+            return Nac()
+        case "nom":
+            return Nom()
+        case "ofc":
+            return Ofc()
+        case "pr":
+            return Pr()
+        case "rad":
+            return Rad()
+        case "ref":
+            return Ref()
+        case "refgrp":
+            return RefGrp()
+        case "rim":
+            return Rim()
+        case "snc":
+            return Snc()
+        case "sncref":
+            return SncRef()
+        case "sub":
+            return Sub()
+        case "sup":
+            return Sup()
+        case "tezrad":
+            return TezRad()
+        case "tld":
+            return Tld()
+        case "trd":
+            return Trd()
+        case "trdgrp":
+            return TrdGrp()
+        case "ts":
+            return Ts()
+        case "url":
+            return Url()
+        case "uzo":
+            return Uzo()
+        case "var":
+            return Var()
+        case "vortaro":
+            return Vortaro()
+        case "vrk":
+            return Vrk()
+        case "vspec":
+            return VSpec()
+        case _:
+            raise ValueError(f"Unknown element: {qname}")
 
 ELEMENT_TYPES: dict[str, type] = {
     # Keep elements sorted

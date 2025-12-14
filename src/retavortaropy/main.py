@@ -1,19 +1,28 @@
 """Parses a retavortaro XML file."""
 
+# pylint: disable=c-extension-no-member
+
 from importlib.resources import files
 import inspect
-from typing import Any
+from typing import cast, Any
 from xml.sax.handler import ContentHandler
 from xml.sax.xmlreader import AttributesNSImpl
 
 from lxml import etree
-from lxml.sax import saxify
+from lxml.sax import saxify  # pylint: disable=no-name-in-module
 
 from retavortaropy.data import vortaro
 
 
 class DTDResolver(etree.Resolver):
-    def resolve(self, system_url: str, public_id: str, context: Any) -> Any:
+    """Resolver for DTDs."""
+    def resolve(
+        self, system_url: str | None, public_id: str | None, context: Any
+    ) -> Any:
+        """Resolve a DTD."""
+        if system_url is None:
+            return None
+        del public_id  # Unused
         print(f"Resolving url {system_url}")
         if system_url.startswith("file:/"):
             resource_path = system_url[6:]
@@ -28,6 +37,7 @@ class DTDResolver(etree.Resolver):
 
 class RevoContentHandler(ContentHandler):
     """Builds the tree."""
+
     root: Any
     stack: list[Any]
 
@@ -41,7 +51,7 @@ class RevoContentHandler(ContentHandler):
         parent = self.stack[-1] if len(self.stack) > 0 else None
         if qname not in vortaro.ELEMENT_TYPES:
             raise ValueError(f"Unimplemented element {qname}, parent {type(parent)}")
-        element = vortaro.ELEMENT_TYPES[qname]()
+        element = vortaro.element_for(qname)
         self.stack.append(element)
 
         attributes = [
@@ -61,6 +71,7 @@ class RevoContentHandler(ContentHandler):
             parent.kap = element
             return
         if isinstance(parent, vortaro.HasContent):
+            parent = cast(vortaro.HasContent[vortaro.Element], parent)
             parent.append(element)
 
     def endElementNS(self, name: tuple[str | None, str], qname: str | None) -> None:
@@ -80,11 +91,13 @@ class RevoContentHandler(ContentHandler):
             return
 
         if isinstance(parent, vortaro.HasTextInContent):
+            parent = cast(vortaro.HasTextInContent[str], parent)
             parent.append(content)
             return
 
 
 def main():
+    """Main function."""
     parser = etree.XMLParser(load_dtd=True, resolve_entities=True)
     parser.resolvers.add(DTDResolver())
     with open("F:/revo-fonto/revo/ten.xml", "r", encoding="UTF-8") as f:

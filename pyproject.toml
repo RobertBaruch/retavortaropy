@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "lxml>=6.0.2",
+    "types-lxml>=2025.11.25",
 ]
 
 [project.scripts]
